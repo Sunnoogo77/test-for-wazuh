@@ -1,23 +1,34 @@
 ## 1. 🔧 Installer Sysmon et configurer Wazuh
 
 ```powershell
-# Télécharger la config Sysmon depuis Wazuh
-Invoke-WebRequest -Uri https://wazuh.com/resources/blog/emulation-of-attack-techniques-and-detection-with-wazuh/sysmonconfig.xml `
+# 1. Créer dossier
+New-Item -ItemType Directory -Path C:\Sysmon -Force
+
+# 2. Télécharger la config
+Invoke-WebRequest `
+  -Uri "https://wazuh.com/resources/blog/emulation-of-attack-techniques-and-detection-with-wazuh/sysmonconfig.xml" `
   -OutFile "C:\Sysmon\sysmonconfig.xml"
 
-# Installer Sysmon (avec droits admin) dans le dossier C:\Sysmon
-C:\Sysmon\sysmonconfig.xml
+# 3. Extraire Sysmon (chemin à ajuster)
+Expand-Archive -Path "<PATH_VERS_SYSNOM_ZIP>\Sysmon.zip" -DestinationPath "C:\Sysmon"
 
-# Ajouter la collecte des logs Sysmon dans Wazuh agent
-@"
+# 4. Installer Sysmon
+cd C:\Sysmon
+.\Sysmon64.exe -accepteula -i C:\Sysmon\sysmonconfig.xml
+
+# 5. Configurer Wazuh agent
+Add-Content `
+  -Path "C:\Program Files (x86)\ossec-agent\ossec.conf" `
+  -Value @"
 <localfile>
-  :contentReference[oaicite:3]{index=3}
-  :contentReference[oaicite:4]{index=4}
+  <location>Microsoft-Windows-Sysmon/Operational</location>
+  <log_format>eventchannel</log_format>
 </localfile>
-"@ >> "C:\P:contentReference[oaicite:5]{index=5}\ossec-agent\ossec.conf"
+"@
 
-# Redémarrer l’agent Wazuh
+# 6. Redémarrer Wazuh
 Restart-Service -Name wazuh
+
 ```
 
 
