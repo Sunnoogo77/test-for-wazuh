@@ -1,33 +1,26 @@
 ## 1. 🔧 Installer Sysmon et configurer Wazuh
 
 ```powershell
-# 1. Créer dossier
+# 1. Créer le dossier
 New-Item -ItemType Directory -Path C:\Sysmon -Force
 
-# 2. Télécharger la config
-Invoke-WebRequest `
-  -Uri "https://wazuh.com/resources/blog/emulation-of-attack-techniques-and-detection-with-wazuh/sysmonconfig.xml" `
-  -OutFile "C:\Sysmon\sysmonconfig.xml"
+# 2. Télécharger Sysmon
+Invoke-WebRequest -Uri "https://live.sysinternals.com/Sysmon.zip" -OutFile "C:\Sysmon\Sysmon.zip"
 
-# 3. Extraire Sysmon (chemin à ajuster)
-Expand-Archive -Path "<PATH_VERS_SYSNOM_ZIP>\Sysmon.zip" -DestinationPath "C:\Sysmon"
+# 3. Décompresser
+Expand-Archive -Path "C:\Sysmon\Sysmon.zip" -DestinationPath "C:\Sysmon" -Force
 
-# 4. Installer Sysmon
+# 4. Télécharger config Sysmon
+Invoke-WebRequest -Uri "https://wazuh.com/resources/blog/emulation-of-attack-techniques-and-detection-with-wazuh/sysmonconfig.xml" -OutFile "C:\Sysmon\sysmonconfig.xml"
+
+# 5. Installer Sysmon
 cd C:\Sysmon
 .\Sysmon64.exe -accepteula -i C:\Sysmon\sysmonconfig.xml
 
-# 5. Configurer Wazuh agent
-Add-Content `
-  -Path "C:\Program Files (x86)\ossec-agent\ossec.conf" `
-  -Value @"
-<localfile>
-  <location>Microsoft-Windows-Sysmon/Operational</location>
-  <log_format>eventchannel</log_format>
-</localfile>
-"@
 
 # 6. Redémarrer Wazuh
 Restart-Service -Name wazuh
+
 
 ```
 
